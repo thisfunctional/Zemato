@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
@@ -45,6 +46,10 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
+        <div className="mb-2 flex flex-col items-center gap-2">
+          <Image src="/icon.svg" alt="Zémato" width={64} height={64} className="rounded-2xl" />
+          <span className="text-lg font-bold tracking-tight text-[#E24B4A]">Zémato</span>
+        </div>
         <h1 className="text-2xl font-semibold">Entrar</h1>
         <input
           type="text"

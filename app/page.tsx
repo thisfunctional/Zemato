@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { IconCheck, IconMoon, IconPlus, IconSun, IconUser, IconX } from '@tabler/icons-react'
 import { supabase } from '@/lib/supabase'
@@ -87,7 +88,10 @@ export default function HomePage() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <header className="flex h-14 shrink-0 items-center justify-between bg-[#1A1A1A] px-6">
-        <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
+        <div className="flex items-center gap-2">
+          <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-lg" />
+          <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
+        </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link href="/settings" aria-label="Perfil" className="text-zinc-400 transition-colors hover:text-white">

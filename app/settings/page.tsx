@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   IconArrowLeft,
   IconCamera,
@@ -175,7 +176,10 @@ export default function SettingsPage() {
           <Link href="/" aria-label="Voltar" className="text-zinc-400 transition-colors hover:text-white">
             <IconArrowLeft size={22} stroke={1.5} />
           </Link>
-          <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
+          <div className="flex items-center gap-2">
+              <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-lg" />
+              <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
+            </div>
         </div>
       </header>
 
