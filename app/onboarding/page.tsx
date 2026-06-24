@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { IconCamera, IconUser } from '@tabler/icons-react'
@@ -8,12 +8,43 @@ import { supabase } from '@/lib/supabase'
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const [checking, setChecking] = useState(true) // aguarda verificação inicial
   const [nickname, setNickname] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Segunda linha de defesa: verifica se o utilizador já tem nickname.
+  // Resolve o caso em que sb-onboarded expirou ou a query falhou no callback.
+  useEffect(() => {
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setChecking(false); return }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        console.error('[onboarding] Erro ao verificar profile:', profileError.message)
+        setChecking(false) // falha de query → mostra o formulário como fallback seguro
+        return
+      }
+
+      if (profile?.nickname) {
+        // Já tem nickname: repõe o cookie e redireciona sem mostrar o formulário
+        document.cookie = 'sb-onboarded=1; path=/; SameSite=Lax; max-age=604800'
+        router.replace('/')
+        return
+      }
+
+      setChecking(false) // nickname é realmente null → mostrar formulário
+    })()
+  }, [router])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
@@ -65,6 +96,14 @@ export default function OnboardingPage() {
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
       setLoading(false)
     }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900">
+        <p className="text-sm text-zinc-400">A verificar…</p>
+      </div>
+    )
   }
 
   return (
