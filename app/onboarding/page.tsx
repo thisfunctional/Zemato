@@ -72,7 +72,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-sm space-y-6">
         <div>
           <div className="flex items-center gap-2">
-              <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-lg" />
+              <Image src="/icon-192.png" alt="" width={32} height={32} className="rounded-lg" />
               <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
             </div>
           <h1 className="mt-4 text-2xl font-bold text-zinc-900 dark:text-zinc-100">

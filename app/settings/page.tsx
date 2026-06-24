@@ -177,7 +177,7 @@ export default function SettingsPage() {
             <IconArrowLeft size={22} stroke={1.5} />
           </Link>
           <div className="flex items-center gap-2">
-              <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-lg" />
+              <Image src="/icon-192.png" alt="" width={32} height={32} className="rounded-lg" />
               <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
             </div>
         </div>
