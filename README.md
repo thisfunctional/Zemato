@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zémato
 
-## Getting Started
+PWA de recomendações de restaurantes entre amigos, inspirada no conceito do extinto Zomato. Cada restaurante tem um único recomendador original (quem o adicionou ao mapa), e outros utilizadores podem registar visitas com avaliação de 1 a 5 estrelas.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** — App Router, proxy (middleware), server + client components
+- **Supabase** — Auth (magic link), PostgreSQL, Storage (avatares e fotos)
+- **Leaflet / OpenStreetMap** — mapa interactivo com pins customizados
+- **Tailwind CSS v4** — estilo, dark mode via `next-themes`
+
+## Funcionalidades
+
+- Mapa com pins por categoria (pizza, peixe, grelhados…), com avatar do recomendador sobreposto
+- Modelo *first come, first served*: um restaurante = uma recomendação original + visitas de outros utilizadores
+- Avaliações por estrelas (1–5) com comentário opcional; média visível no pin e na ficha
+- Perfis com nickname e avatar (bucket `avatars` no Supabase Storage)
+- Autenticação por magic link; onboarding obrigatório antes do primeiro acesso
+- Ficha de restaurante com ligações directas ao Google Maps, Waze e Apple Maps
+- Página de definições com histórico de recomendações e visitas do utilizador
+
+## Setup local
+
+```bash
+git clone <repo-url>
+cd zemato
+npm install
+```
+
+Cria `.env.local` na raiz com as credenciais do projecto Supabase:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+```
+
+Liga ao projecto Supabase e aplica as migrations:
+
+```bash
+npx supabase link --project-ref <project-ref>
+npx supabase db push
+```
+
+Inicia o servidor de desenvolvimento:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
