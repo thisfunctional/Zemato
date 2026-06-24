@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
-  const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -20,7 +19,6 @@ export default function LoginPage() {
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: { nome },
       },
     })
 
@@ -46,7 +44,6 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-900">
       <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
-        {/* Logo — única instância do branding nesta página, sem header genérico */}
         <div className="mb-4 flex flex-col items-center gap-2">
           <Image
             src="/icon-192.png"
@@ -61,14 +58,6 @@ export default function LoginPage() {
 
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Entrar</h1>
 
-        <input
-          type="text"
-          placeholder="O teu nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          required
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#E24B4A]/40 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100 dark:placeholder:text-zinc-400"
-        />
         <input
           type="email"
           placeholder="O teu email"

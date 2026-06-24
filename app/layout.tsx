@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: 'Zémato — recomendações de restaurantes entre amigos',
   description: 'Descobre os restaurantes recomendados pelos teus amigos, num mapa.',
   manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Zémato',
+  },
   openGraph: {
     title: 'Zémato — recomendações de restaurantes entre amigos',
     description: 'Descobre os restaurantes recomendados pelos teus amigos, num mapa.',
