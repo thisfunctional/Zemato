@@ -115,9 +115,9 @@ export default function HomePage() {
           refreshKey={refreshKey}
         />
 
-        {/* Instrução no topo do mapa */}
+        {/* Instrução no topo do mapa — fixed ao viewport, abaixo do header (h-14 = 3.5rem) */}
         {addStep === 'placing' && (
-          <div className="pointer-events-none absolute inset-x-0 top-4 z-[1001] flex justify-center px-4">
+          <div className="pointer-events-none fixed inset-x-0 z-[1002] flex justify-center px-4" style={{ top: 'calc(3.5rem + 1rem)' }}>
             <div className="rounded-xl bg-white/90 px-4 py-2.5 shadow-lg backdrop-blur-sm dark:bg-zinc-800/90">
               <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
                 Arrasta o pin para a posição exata
@@ -126,9 +126,15 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Botões Cancelar / Confirmar posição */}
+        {/* Botões Cancelar / Confirmar posição
+            fixed ao viewport (não absolute ao container) para não ficarem
+            escondidos atrás da barra de navegação do browser em iOS.
+            env(safe-area-inset-bottom) garante margem acima do home indicator. */}
         {addStep === 'placing' && (
-          <div className="absolute inset-x-0 bottom-6 z-[1001] flex justify-center gap-3 px-6">
+          <div
+            className="fixed inset-x-0 z-[1002] flex justify-center gap-3 px-6"
+            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+          >
             <button
               onClick={handleCancel}
               className="flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-lg transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
