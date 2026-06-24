@@ -1,65 +1,167 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+import { useCallback, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+import Link from 'next/link'
+import { useTheme } from 'next-themes'
+import { IconCheck, IconMoon, IconPlus, IconSun, IconUser, IconX } from '@tabler/icons-react'
+import { supabase } from '@/lib/supabase'
+import AddRestaurantForm from '@/components/AddRestaurantForm'
+
+const MapView = dynamic(() => import('@/components/MapView'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center bg-zinc-100 dark:bg-zinc-800">
+      <p className="text-sm text-zinc-400">A carregar mapa…</p>
     </div>
-  );
+  ),
+})
+
+const THEME_CYCLE: Record<string, string> = { light: 'dark', dark: 'system', system: 'light' }
+
+// 'idle' → FAB click → 'placing' → confirmar → 'form' → submeter → 'idle'
+type AddStep = 'idle' | 'placing' | 'form'
+
+function ThemeToggle() {
+  const { theme, resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) return <div className="h-6 w-6" />
+
+  return (
+    <button
+      aria-label="Alternar tema"
+      onClick={() => setTheme(THEME_CYCLE[theme ?? 'system'])}
+      className="text-zinc-400 transition-colors hover:text-white"
+    >
+      {resolvedTheme === 'dark'
+        ? <IconSun size={22} stroke={1.5} />
+        : <IconMoon size={22} stroke={1.5} />}
+    </button>
+  )
+}
+
+export default function HomePage() {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [userPos, setUserPos] = useState<[number, number] | null>(null)
+  const [addStep, setAddStep] = useState<AddStep>('idle')
+  const [pinPosition, setPinPosition] = useState<[number, number] | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  useEffect(() => {
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single()
+      if (data?.avatar_url) setAvatarUrl(data.avatar_url as string)
+    })()
+  }, [])
+
+  function handleFabClick() {
+    // Pin começa na posição do utilizador ou no centro de Portugal como fallback
+    setPinPosition(userPos ?? [39.5, -8.0])
+    setAddStep('placing')
+  }
+
+  function handleCancel() {
+    setAddStep('idle')
+    setPinPosition(null)
+  }
+
+  function handleConfirmPosition() {
+    if (!pinPosition) return
+    setAddStep('form')
+  }
+
+  const handleFormSuccess = useCallback(() => {
+    setAddStep('idle')
+    setPinPosition(null)
+    setRefreshKey((k) => k + 1)
+  }, [])
+
+  return (
+    <div className="flex h-screen flex-col overflow-hidden">
+      <header className="flex h-14 shrink-0 items-center justify-between bg-[#1A1A1A] px-6">
+        <span className="text-xl font-bold tracking-tight text-[#E24B4A]">Zémato</span>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link href="/settings" aria-label="Perfil" className="text-zinc-400 transition-colors hover:text-white">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+            ) : (
+              <IconUser size={22} stroke={1.5} />
+            )}
+          </Link>
+        </div>
+      </header>
+
+      {/* Área do mapa */}
+      <div className="relative flex-1 overflow-hidden">
+        <MapView
+          addMode={addStep === 'placing'}
+          pinPosition={pinPosition}
+          onPinMove={setPinPosition}
+          onUserPosChange={setUserPos}
+          refreshKey={refreshKey}
+        />
+
+        {/* Instrução no topo do mapa */}
+        {addStep === 'placing' && (
+          <div className="pointer-events-none absolute inset-x-0 top-4 z-[1001] flex justify-center px-4">
+            <div className="rounded-xl bg-white/90 px-4 py-2.5 shadow-lg backdrop-blur-sm dark:bg-zinc-800/90">
+              <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
+                Arrasta o pin para a posição exata
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Botões Cancelar / Confirmar posição */}
+        {addStep === 'placing' && (
+          <div className="absolute inset-x-0 bottom-6 z-[1001] flex justify-center gap-3 px-6">
+            <button
+              onClick={handleCancel}
+              className="flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-lg transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
+            >
+              <IconX size={16} stroke={2} />
+              Cancelar
+            </button>
+            <button
+              onClick={handleConfirmPosition}
+              className="flex items-center gap-1.5 rounded-full bg-[#E24B4A] px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[#c93b3a]"
+            >
+              <IconCheck size={16} stroke={2} />
+              Confirmar posição
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* FAB — só visível no estado idle */}
+      {addStep === 'idle' && (
+        <button
+          onClick={handleFabClick}
+          aria-label="Adicionar restaurante"
+          className="fixed bottom-6 right-6 z-[1001] flex h-14 w-14 items-center justify-center rounded-full bg-[#E24B4A] shadow-lg transition-transform hover:scale-105 hover:bg-[#c93b3a] active:scale-95"
+        >
+          <IconPlus size={24} stroke={2} className="text-white" />
+        </button>
+      )}
+
+      {/* Modal de detalhe do restaurante */}
+      {addStep === 'form' && pinPosition && (
+        <AddRestaurantForm
+          pinPosition={pinPosition}
+          onSuccess={handleFormSuccess}
+          onCancel={handleCancel}
+        />
+      )}
+    </div>
+  )
 }
